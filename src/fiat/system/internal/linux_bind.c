@@ -126,18 +126,34 @@ void linux_bind_ (int * prank, int * psize)
   size_t len  = 256;
   char * buf = (char*)malloc (len);
   const char * EC_LINUX_BIND;
+  cpu_set_t mask;
+  int iomp, nthreads;
+
+  printf("Hello from inside linux_bind\n");
 
   EC_LINUX_BIND = getenv ("EC_LINUX_BIND");
 
   if (EC_LINUX_BIND == NULL)
     EC_LINUX_BIND = LINUX_BIND_TXT;
 
+  printf("EC_LINUX_BIND = %s\n", EC_LINUX_BIND);
+
+  nthreads=omp_get_max_threads();
+
+  #pragma omp parallel default(none) private(mask, iomp) shared(rank)
+  {
+      iomp=omp_get_thread_num();
+      CPU_ZERO(&mask);
+      CPU_SET(rank*nthreads + iomp + 12, &mask );
+      sched_setaffinity(0, sizeof(cpu_set_t), &mask );
+  }
+
   fp = fopen (EC_LINUX_BIND, "r");
 
   if (fp == NULL)
     {
       // Willem Deconinck: Comment out as this pollutes logs
-      // fprintf (stderr, "`%s' was not found\n", EC_LINUX_BIND);
+      fprintf (stderr, "`%s' was not found\n", EC_LINUX_BIND);
       goto end;
     }
 
@@ -155,8 +171,7 @@ void linux_bind_ (int * prank, int * psize)
 #endif
   {
     char * c;
-    cpu_set_t mask;
-    int iomp = 
+    iomp = 
 #ifdef _OPENMP
       omp_get_thread_num ()
 #else
