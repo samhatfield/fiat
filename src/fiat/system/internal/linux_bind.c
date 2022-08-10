@@ -215,10 +215,27 @@ end:
   free (buf);
 }
 
+// Manual binding routine used as a workaround for Fugaku
+void bind_manual_ (int * pnum_threads, int * pthread_num, int * prank)
+{
+  int num_threads = *pnum_threads;
+  int thread_num = *pthread_num;
+  int rank = *prank;
+  cpu_set_t mask;
+
+  // Initialize CPU mask
+  CPU_ZERO(&mask);
+
+  // Manually set CPU affinity
+  CPU_SET(rank*num_threads + thread_num + 12, &mask);
+  sched_setaffinity(0, sizeof(cpu_set_t), &mask);
+}
+
 #else
 
 void linux_bind_ () { }
 void linux_bind_dump_ () { }
+void bind_manual_ () { }
 
 #endif
 

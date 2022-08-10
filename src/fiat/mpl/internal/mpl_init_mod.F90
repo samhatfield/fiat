@@ -63,7 +63,7 @@ MODULE MPL_INIT_MOD
 !     ------------------------------------------------------------------
 
 USE EC_PARKIND  ,ONLY : JPIM
-USE OML_MOD, ONLY : OML_INIT, OML_GET_MAX_THREADS
+USE OML_MOD, ONLY : OML_INIT, OML_GET_MAX_THREADS, OML_MY_THREAD
 USE MPL_MPIF
 USE MPL_DATA_MODULE
 USE MPL_MESSAGE_MOD
@@ -307,6 +307,14 @@ CALL MPI_COMM_RANK (MPI_COMM_WORLD, IWORLD_RANK, IERROR)
 CALL MPI_COMM_SIZE (MPI_COMM_WORLD, IWORLD_SIZE, IERROR)
 
 #ifdef LINUX
+! Temporary workaround for Fugaku
+! This system requires manual thread binding for unknown reasons
+!$OMP PARALLEL DEFAULT(NONE) PRIVATE(IP) SHARED(IMAX_THREADS, MPL_RANK)
+IP = OML_MY_THREAD()
+! Call manual binding C routine (the OMP thread and MPI rank variables needs to start from 0 in C)
+CALL BIND_MANUAL(IMAX_THREADS, IP-1, MPL_RANK-1)
+!$OMP END PARALLEL
+
 CALL LINUX_BIND (IWORLD_RANK, IWORLD_SIZE)
 #endif
 
