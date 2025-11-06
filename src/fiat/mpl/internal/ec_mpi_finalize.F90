@@ -23,6 +23,10 @@ COMMON /cmn_meminfo/ NCOMM_MEMINFO
 #include "ec_meminfo.intfb.h"
 #include "dr_hook_end.intfb.h"
 KERROR = 0
+
+WRITE(6,*) "EC_MPI_FINALIZE 1"
+FLUSH(6)
+
 IF (LDCALLFINITO) THEN !*** common MPI_Finalize()
   CALL MPI_INITIALIZED(LLINIT,IERR)
   IF (LLINIT .AND. IERR == 0) THEN
@@ -35,7 +39,13 @@ IF (LDCALLFINITO) THEN !*** common MPI_Finalize()
         ICOMM = MPI_COMM_WORLD
       ENDIF
 
+      WRITE(6,*) "EC_MPI_FINALIZE 2"
+      FLUSH(6)
+
       IF( LDMEMINFO ) CALL EC_MEMINFO(-1,"ec_mpi_finalize:"//caller,ICOMM,KBARR=1,KIOTASK=-1,KCALL=1)
+
+      WRITE(6,*) "EC_MPI_FINALIZE 3"
+      FLUSH(6)
 
       !CALL DR_HOOK_END() ! Make sure DrHook output is produced before MPI_Finalize (in case it fails)
       CALL MPI_BARRIER(ICOMM,IERR)
