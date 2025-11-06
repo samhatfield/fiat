@@ -37,7 +37,7 @@ IF (LDCALLFINITO) THEN !*** common MPI_Finalize()
 
       IF( LDMEMINFO ) CALL EC_MEMINFO(-1,"ec_mpi_finalize:"//caller,ICOMM,KBARR=1,KIOTASK=-1,KCALL=1)
 
-      CALL DR_HOOK_END() ! Make sure DrHook output is produced before MPI_Finalize (in case it fails)
+      !CALL DR_HOOK_END() ! Make sure DrHook output is produced before MPI_Finalize (in case it fails)
       CALL MPI_BARRIER(ICOMM,IERR)
       IF (LLNOTMPIWORLD) THEN
         ! CALL MPI_COMM_FREE(NCOMM_MEMINFO,IERR)
